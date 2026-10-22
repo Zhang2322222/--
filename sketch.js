@@ -58,14 +58,14 @@ function createFlower(idx, customX = null) {
     y: state.h * 0.92 + yOffset, 
     targetH: randH * state.richness, 
     h: 0,
-    // 花朵初始尺寸变大
-    scaleFactor: 1.2, 
+    // 【修改】初始缩放系数从 0.6 调大至 0.85，使得刚长出来时花朵就比较大
+    scaleFactor: 0.85, 
     stemStyle: state.stemStyle === 'random' ? (Math.random() > 0.5 ? 'curved' : 'straight') : state.stemStyle, 
     curve: (Math.random() - 0.5) * 40, 
     layers: 2, 
     petalCount: 6 + Math.floor(Math.random() * 3 * state.richness), 
-    // 花瓣基础尺寸变大
-    petalSize: 45 + Math.random() * 15 * state.richness, 
+    // 基础尺寸保持在 25 ~ 35 的适中范围
+    petalSize: 25 + Math.random() * 10 * state.richness,
     bloom: 0, phase: Math.random() * Math.PI * 2, sway: Math.random() * Math.PI * 2
   };
   applyTheme(f); return f;
@@ -160,16 +160,13 @@ new p5((p) => {
     // 生长控制
     if (state.isOpenPalm && !state.isPinching) {
       const dt = p.deltaTime / 1000;
-      // 整体生长进度变慢
-      state.growthProgress = Math.min(1, state.growthProgress + dt * 0.03); 
+      state.growthProgress = Math.min(1, state.growthProgress + dt * 0.09); 
       state.flowers.forEach(f => { 
         const speedMod = 0.8 + (f.id % 5) * 0.1; 
-        // 茎干生长变慢
-        f.h = p.lerp(f.h, f.targetH, 0.004 * speedMod); 
-        // 绽放变慢
-        f.bloom = p.lerp(f.bloom, 1, 0.002); 
-        // 最终放大目标变大
-        f.scaleFactor = p.lerp(f.scaleFactor, 1.8, 0.003); 
+        f.h = p.lerp(f.h, f.targetH, 0.012 * speedMod); 
+        f.bloom = p.lerp(f.bloom, 1, 0.008); 
+        // 绽放后放大到 1.0 倍
+        f.scaleFactor = p.lerp(f.scaleFactor, 1.0, 0.008); 
       });
     }
 
@@ -240,94 +237,36 @@ new p5((p) => {
       }
     });
 
-    // 渲染蝴蝶
     state.butterflies.forEach(b => {
       if (Math.random() < 0.03) { b.vx += (Math.random() - 0.5) * 0.6; b.vy += (Math.random() - 0.5) * 0.6; }
       b.vx = p.constrain(b.vx, -3, 3); b.vy = p.constrain(b.vy, -3, 3);
-      b.x += b.vx; b.y += b.vy; b.ph += 0.15; 
-      
+      b.x += b.vx; b.y += b.vy; b.ph += 0.12; 
       if (b.x < -60) b.x = state.w + 60; if (b.x > state.w + 60) b.x = -60;
       if (b.y < -60) b.y = state.h + 60; if (b.y > state.h + 60) b.y = -60;
 
-      const flap = Math.abs(Math.sin(b.ph)); 
-      const wingScaleX = 0.15 + flap * 0.85; 
-      const ws = b.size; 
-      
-      p.push(); 
-      p.translate(b.x, b.y); 
-      p.rotate(Math.atan2(b.vy, b.vx) + Math.PI / 2); 
-      
-      // 触角
-      p.stroke(120, 120, 130, 180); 
-      p.strokeWeight(1); 
-      p.noFill();
-      p.beginShape();
-      p.vertex(0, -ws * 0.4);
-      p.bezierVertex(-ws * 0.2, -ws * 0.7, -ws * 0.4, -ws * 0.8, -ws * 0.5, -ws * 0.7);
-      p.endShape();
-      p.beginShape();
-      p.vertex(0, -ws * 0.4);
-      p.bezierVertex(ws * 0.2, -ws * 0.7, ws * 0.4, -ws * 0.8, ws * 0.5, -ws * 0.7);
-      p.endShape();
-
-      // 翅膀
+      const flap = Math.abs(Math.sin(b.ph)), ws = b.size; 
+      p.push(); p.translate(b.x, b.y); p.rotate(Math.atan2(b.vy, b.vx) + Math.PI / 2); 
       p.noStroke();
-      const cMain = p.color(b.c[0], b.c[1], b.c[2], 220);
-      const cLight = p.color(Math.min(255, b.c[0] + 20), Math.min(255, b.c[1] + 20), Math.min(255, b.c[2] + 20), 200);
-
-      // 左侧
-      p.push();
-      p.scale(wingScaleX, 1); 
-      p.fill(cMain);
-      p.beginShape();
-      p.vertex(0, 0);
-      p.bezierVertex(-ws * 0.6, -ws * 0.6, -ws * 1.2, -ws * 0.2, -ws * 0.6, ws * 0.1);
-      p.bezierVertex(-ws * 0.9, ws * 0.5, -ws * 0.5, ws * 0.8, 0, ws * 0.3);
-      p.endShape(p.CLOSE);
-      p.fill(cLight);
-      p.beginShape();
-      p.vertex(0, 0);
-      p.bezierVertex(-ws * 0.4, -ws * 0.4, -ws * 0.6, -ws * 0.1, -ws * 0.4, ws * 0.1);
-      p.bezierVertex(-ws * 0.4, ws * 0.3, -ws * 0.2, ws * 0.4, 0, ws * 0.2);
-      p.endShape(p.CLOSE);
-      p.pop();
-
-      // 右侧
-      p.push();
-      p.scale(wingScaleX, 1);
-      p.fill(cMain);
-      p.beginShape();
-      p.vertex(0, 0);
-      p.bezierVertex(ws * 0.6, -ws * 0.6, ws * 1.2, -ws * 0.2, ws * 0.6, ws * 0.1);
-      p.bezierVertex(ws * 0.9, ws * 0.5, ws * 0.5, ws * 0.8, 0, ws * 0.3);
-      p.endShape(p.CLOSE);
-      p.fill(cLight);
-      p.beginShape();
-      p.vertex(0, 0);
-      p.bezierVertex(ws * 0.4, -ws * 0.4, ws * 0.6, -ws * 0.1, ws * 0.4, ws * 0.1);
-      p.bezierVertex(ws * 0.4, ws * 0.3, ws * 0.2, ws * 0.4, 0, ws * 0.2);
-      p.endShape(p.CLOSE);
-      p.pop();
-
-      // 身体
-      p.fill(80, 80, 90);
-      p.ellipse(0, ws * 0.1, ws * 0.12, ws * 0.7);
-      p.fill(100, 100, 110);
-      p.ellipse(0, -ws * 0.25, ws * 0.15, ws * 0.35); 
       
+      p.stroke(150, 150, 150, 150); p.strokeWeight(1); p.noFill();
+      p.line(0, -ws*0.3, -ws*0.2, -ws*0.7); p.line(0, -ws*0.3, ws*0.2, -ws*0.7);
+      
+      p.noStroke(); p.push(); p.scale(flap * 0.9 + 0.1, 1); 
+      p.fill(b.c[0], b.c[1], b.c[2], 240);
+      p.ellipse(-ws*0.4, -ws*0.1, ws*0.9, ws*0.6); p.ellipse(-ws*0.3, ws*0.3, ws*0.6, ws*0.5);
+      p.ellipse(ws*0.4, -ws*0.1, ws*0.9, ws*0.6); p.ellipse(ws*0.3, ws*0.3, ws*0.6, ws*0.5);
+      p.pop(); 
+      p.fill(90, 90, 100); p.ellipse(0, 0, ws*0.1, ws*0.6); 
       p.pop();
     });
     if (state.butterflies.length > 15) state.butterflies.splice(0, state.butterflies.length - 15);
 
-    // 渲染雨滴 (尺寸变大)
     state.raindrops.forEach(r => {
       r.y += r.s; if (r.y > state.h + 20) { r.y = -20; r.x = Math.random() * state.w; }
       p.fill(200, 220, 255, 150); p.noStroke();
-      
-      p.beginShape(); 
-      p.vertex(r.x, r.y - 12);
-      p.bezierVertex(r.x + 5, r.y - 6, r.x + 5, r.y + 6, r.x, r.y + 9);
-      p.bezierVertex(r.x - 5, r.y + 6, r.x - 5, r.y - 6, r.x, r.y - 12);
+      p.beginShape(); p.vertex(r.x, r.y - 8);
+      p.bezierVertex(r.x + 3, r.y - 4, r.x + 3, r.y + 4, r.x, r.y + 6);
+      p.bezierVertex(r.x - 3, r.y + 4, r.x - 3, r.y - 4, r.x, r.y - 8);
       p.endShape();
     });
 
@@ -364,9 +303,7 @@ new p5((p) => {
       }
     }
     if (state.twoHands && now - (p.lastRain || 0) > 80) {
-      p.lastRain = now; 
-      // 雨滴生成尺寸变大
-      state.raindrops.push({ x: Math.random() * state.w, y: -20, s: 12 + Math.random() * 12 });
+      p.lastRain = now; state.raindrops.push({ x: Math.random() * state.w, y: -20, s: 6 + Math.random() * 6 });
     }
     if (state.mouthOpen && state.faceData && now - (p.lastFly || 0) > 350) {
       p.lastFly = now;
@@ -375,7 +312,7 @@ new p5((p) => {
     }
     if (state.isFist && now - (p.lastClear || 0) > 1000) {
       p.lastClear = now; state.butterflies = []; state.raindrops = []; state.seeds = []; state.growthProgress = 0;
-      state.flowers.forEach(f => { f.h = 0; f.bloom = 0; f.scaleFactor = 1.2; });
+      state.flowers.forEach(f => { f.h = 0; f.bloom = 0; f.scaleFactor = 0.85; });
     }
 
     let s = "👋 ";
