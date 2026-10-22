@@ -58,13 +58,13 @@ function createFlower(idx, customX = null) {
     y: state.h * 0.92 + yOffset, 
     targetH: randH * state.richness, 
     h: 0,
-    // 【修改：花朵初始尺寸变大】
+    // 花朵初始尺寸变大
     scaleFactor: 1.2, 
     stemStyle: state.stemStyle === 'random' ? (Math.random() > 0.5 ? 'curved' : 'straight') : state.stemStyle, 
     curve: (Math.random() - 0.5) * 40, 
     layers: 2, 
     petalCount: 6 + Math.floor(Math.random() * 3 * state.richness), 
-    // 【修改：花瓣基础尺寸变大】
+    // 花瓣基础尺寸变大
     petalSize: 45 + Math.random() * 15 * state.richness, 
     bloom: 0, phase: Math.random() * Math.PI * 2, sway: Math.random() * Math.PI * 2
   };
@@ -160,15 +160,15 @@ new p5((p) => {
     // 生长控制
     if (state.isOpenPalm && !state.isPinching) {
       const dt = p.deltaTime / 1000;
-      // 【修改：整体生长进度变慢】
+      // 整体生长进度变慢
       state.growthProgress = Math.min(1, state.growthProgress + dt * 0.03); 
       state.flowers.forEach(f => { 
         const speedMod = 0.8 + (f.id % 5) * 0.1; 
-        // 【修改：茎干生长变慢】
+        // 茎干生长变慢
         f.h = p.lerp(f.h, f.targetH, 0.004 * speedMod); 
-        // 【修改：绽放变慢】
+        // 绽放变慢
         f.bloom = p.lerp(f.bloom, 1, 0.002); 
-        // 【修改：最终放大目标变大】
+        // 最终放大目标变大
         f.scaleFactor = p.lerp(f.scaleFactor, 1.8, 0.003); 
       });
     }
@@ -240,7 +240,7 @@ new p5((p) => {
       }
     });
 
-    // 渲染蝴蝶 (更新后的优雅形状)
+    // 渲染蝴蝶
     state.butterflies.forEach(b => {
       if (Math.random() < 0.03) { b.vx += (Math.random() - 0.5) * 0.6; b.vy += (Math.random() - 0.5) * 0.6; }
       b.vx = p.constrain(b.vx, -3, 3); b.vy = p.constrain(b.vy, -3, 3);
@@ -319,12 +319,15 @@ new p5((p) => {
     });
     if (state.butterflies.length > 15) state.butterflies.splice(0, state.butterflies.length - 15);
 
+    // 渲染雨滴 (尺寸变大)
     state.raindrops.forEach(r => {
       r.y += r.s; if (r.y > state.h + 20) { r.y = -20; r.x = Math.random() * state.w; }
       p.fill(200, 220, 255, 150); p.noStroke();
-      p.beginShape(); p.vertex(r.x, r.y - 8);
-      p.bezierVertex(r.x + 3, r.y - 4, r.x + 3, r.y + 4, r.x, r.y + 6);
-      p.bezierVertex(r.x - 3, r.y + 4, r.x - 3, r.y - 4, r.x, r.y - 8);
+      
+      p.beginShape(); 
+      p.vertex(r.x, r.y - 12);
+      p.bezierVertex(r.x + 5, r.y - 6, r.x + 5, r.y + 6, r.x, r.y + 9);
+      p.bezierVertex(r.x - 5, r.y + 6, r.x - 5, r.y - 6, r.x, r.y - 12);
       p.endShape();
     });
 
@@ -361,7 +364,9 @@ new p5((p) => {
       }
     }
     if (state.twoHands && now - (p.lastRain || 0) > 80) {
-      p.lastRain = now; state.raindrops.push({ x: Math.random() * state.w, y: -20, s: 6 + Math.random() * 6 });
+      p.lastRain = now; 
+      // 雨滴生成尺寸变大
+      state.raindrops.push({ x: Math.random() * state.w, y: -20, s: 12 + Math.random() * 12 });
     }
     if (state.mouthOpen && state.faceData && now - (p.lastFly || 0) > 350) {
       p.lastFly = now;
@@ -370,7 +375,6 @@ new p5((p) => {
     }
     if (state.isFist && now - (p.lastClear || 0) > 1000) {
       p.lastClear = now; state.butterflies = []; state.raindrops = []; state.seeds = []; state.growthProgress = 0;
-      // 【修改：重置为初始放大的尺寸】
       state.flowers.forEach(f => { f.h = 0; f.bloom = 0; f.scaleFactor = 1.2; });
     }
 
