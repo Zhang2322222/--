@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>播种 · 生长 · 雨 · 蝶</title>
+  <link rel="stylesheet" href="style.css">
+  <script type="importmap">
+  {
+    "imports": {
+      "@mediapipe/tasks-vision": "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.18/vision_bundle.mjs"
+    }
+  }
+  </script>
+</head>
+<body>
+<div id="loading"><div class="ring"></div><p>正在加载 AI 模型...</p></div>
+<div id="ui">
+  <h3>✦ 控 制 面 板 ✦</h3>
+  <div class="row"><label>花朵数量</label><input type="range" id="flowerCount" min="1" max="12" value="6"></div>
+  <div class="row"><label>茎干形态</label><select id="stemStyle"><option value="curved">弯曲</option><option value="straight">笔直</option><option value="random">随机</option></select></div>
+  <div class="row"><label>形态丰富度</label><input type="range" id="richness" min="0.5" max="2" step="0.1" value="1"></div>
+  <div class="row"><label>色系主题</label><select id="theme"><option value="aurora">极光</option><option value="sunset">日落</option><option value="sakura">樱粉</option><option value="ocean">深海</option><option value="moon">月光</option><option value="fire">火焰</option></select></div>
+  <div class="row"><label>梦幻光感</label><input type="range" id="glow" min="0" max="1" step="0.05" value="0.2"></div>
+  <button class="btn" id="fullscreen">进 入 全 屏</button>
+</div>
+<button id="toggleUI">✦</button>
+<div id="hints">
+  <div><b>捏合</b> 播种</div><div><b>张开手掌</b> 生长</div><div><b>双手</b> 下雨</div><div><b>张嘴</b> 蝴蝶</div><div><b>握拳</b> 清空</div>
+</div>
+<div id="status">初始化中...</div>
+<div id="videoPreview"><video id="inputVideo" autoplay playsinline muted></video></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.3/p5.min.js"></script>
+<script type="module" src="./sketch.js"></script> 
+</body>
+</html>
